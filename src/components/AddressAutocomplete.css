@@ -1,0 +1,84 @@
+/* ── AddressAutocomplete ─────────────────────────────────────────────────── */
+.addr-wrap { position: relative; }
+
+.addr-input-wrap { position: relative; }
+.addr-input-wrap .form-input { padding-right: 36px; }
+
+.addr-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--clr-slate-500);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+@keyframes addr-spin {
+  to { transform: rotate(360deg); }
+}
+.addr-spin { animation: addr-spin 0.7s linear infinite; }
+
+.addr-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  z-index: 999;
+  background: hsl(222, 55%, 12%);
+  border: 1px solid hsla(0,0%,100%,0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px hsla(0,0%,0%,0.5);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.addr-item {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+  border-bottom: 1px solid hsla(0,0%,100%,0.05);
+}
+.addr-item:last-child { border-bottom: none; }
+.addr-item:hover,
+.addr-item.active {
+  background: hsla(40,95%,52%,0.08);
+}
+
+.addr-item-icon {
+  color: var(--clr-gold-400);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.addr-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.addr-item-main {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--clr-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.addr-item-sub {
+  font-size: 0.74rem;
+  color: var(--clr-slate-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

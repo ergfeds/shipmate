@@ -1,0 +1,346 @@
+/* ── AdminLive responsive layout ─────────────────────────────────────── */
+
+.al-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.al-tabs {
+  display: flex;
+  background: hsla(0,0%,100%,0.05);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.al-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: calc(var(--radius-md) - 2px);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  color: var(--clr-slate-400);
+  background: none;
+}
+.al-tab.active {
+  background: hsla(0,0%,100%,0.1);
+  color: #fff;
+}
+.al-tab-badge {
+  background: var(--clr-gold-500);
+  color: var(--clr-navy-950);
+  font-size: 0.65rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ── Shared split layout ─────────────────────────────────────────────── */
+
+.al-body {
+  border-radius: var(--radius-xl);
+  height: calc(100vh - 210px);
+  min-height: 500px;
+  overflow: hidden;
+  display: flex;
+  position: relative;
+}
+
+.al-split {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.al-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid hsla(0,0%,100%,0.05);
+  background: hsla(222,55%,10%,0.5);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.al-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Sidebar item ────────────────────────────────────────────────────── */
+
+.al-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid hsla(0,0%,100%,0.05);
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.al-item:hover { background: hsla(0,0%,100%,0.03); }
+.al-item.active {
+  background: hsla(40,95%,52%,0.06);
+  border-left-color: var(--clr-gold-500);
+}
+.al-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.al-item-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
+}
+.al-item-sub {
+  font-size: 0.75rem;
+  color: var(--clr-slate-400);
+}
+
+.al-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--clr-slate-500);
+  gap: 12px;
+  padding: 40px;
+  text-align: center;
+}
+
+/* ── Back button (mobile only) ───────────────────────────────────────── */
+
+.al-back-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid hsla(0,0%,100%,0.05);
+  background: hsla(222,55%,12%,0.8);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--clr-gold-400);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* ── Call answer action row ──────────────────────────────────────────── */
+
+.al-action-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* ── Chat header ─────────────────────────────────────────────────────── */
+
+.al-chat-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid hsla(0,0%,100%,0.05);
+  background: hsla(222,55%,12%,0.6);
+  flex-shrink: 0;
+}
+
+.al-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.al-chat-form {
+  padding: 14px 16px;
+  border-top: 1px solid hsla(0,0%,100%,0.05);
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Connected call main panel ───────────────────────────────────────── */
+
+.al-call-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+/* ── Users card grid ─────────────────────────────────────────────────── */
+
+.al-users-wrap {
+  width: 100%;
+  overflow-y: auto;
+  padding: 24px 28px;
+}
+
+.al-user-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.al-user-card {
+  background: hsla(0,0%,100%,0.04);
+  border: 1px solid hsla(0,0%,100%,0.07);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.al-user-info { flex: 1; min-width: 0; }
+.al-user-fp {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.al-user-meta {
+  font-size: 0.74rem;
+  color: var(--clr-slate-400);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Mobile (≤ 768px) ────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .al-page-header {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .al-tabs {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .al-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 0.76rem;
+    gap: 4px;
+  }
+
+  .al-body {
+    height: calc(100dvh - 180px);
+    min-height: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  /* Split becomes single-column with panel toggle */
+  .al-split {
+    flex-direction: column;
+  }
+
+  /* Sidebar fills full width on mobile by default */
+  .al-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid hsla(0,0%,100%,0.05);
+  }
+
+  /* When detail is open: hide sidebar, show main */
+  .al-split.detail-open .al-sidebar {
+    display: none;
+  }
+  .al-split.detail-open .al-main {
+    display: flex;
+  }
+
+  /* When list is showing: hide main */
+  .al-split:not(.detail-open) .al-main {
+    display: none;
+  }
+
+  /* Always show main when sidebar is empty-state hidden */
+  .al-split.force-main .al-sidebar { display: none; }
+  .al-split.force-main .al-main { display: flex; }
+
+  .al-back-btn {
+    display: flex;
+  }
+
+  .al-call-panel {
+    padding: 24px 20px;
+  }
+
+  .al-users-wrap {
+    padding: 16px;
+  }
+
+  .al-chat-messages {
+    padding: 14px;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Ensure both panels always visible on desktop */
+  .al-split .al-sidebar { display: flex !important; flex-direction: column; }
+  .al-split .al-main { display: flex !important; }
+  .al-back-btn { display: none !important; }
+}
+
+/* Desktop: show table, hide cards */
+.al-users-cards-mobile { display: none; }
+.al-users-table { display: block; }
+
+@media (max-width: 768px) {
+  /* Mobile: hide table, show cards */
+  .al-users-table { display: none; }
+  .al-users-cards-mobile { display: grid; }
+
+  /* al-main needs to be flex-col when open */
+  .al-split.detail-open .al-main {
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* Users wrap fills full space */
+  .al-users-wrap {
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+
+@keyframes al-pulse-call {
+  0%, 100% { box-shadow: 0 0 0 0 hsla(145,65%,38%,0.4); }
+  50% { box-shadow: 0 0 0 14px hsla(145,65%,38%,0); }
+}
