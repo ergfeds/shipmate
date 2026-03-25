@@ -138,12 +138,25 @@ export const updateStatus = mutation({
     updatedBy: v.optional(v.id("users")),
   },
   handler: async (ctx, { shipmentId, status, location, lng, lat, note, updatedBy }) => {
+    // Build location patch: if new coords provided use them; if location text
+    // changed but no coords, clear old coords so pin never mismatches the text.
+    const locationPatch: Record<string, unknown> = {};
+    if (location !== undefined) locationPatch.currentLocation = location;
+    if (lat !== undefined) {
+      locationPatch.currentLat = lat;
+    } else if (location !== undefined) {
+      locationPatch.currentLat = undefined; // clear stale pin
+    }
+    if (lng !== undefined) {
+      locationPatch.currentLng = lng;
+    } else if (location !== undefined) {
+      locationPatch.currentLng = undefined; // clear stale pin
+    }
+
     await ctx.db.patch(shipmentId, {
       status,
       updatedAt: Date.now(),
-      ...(location && { currentLocation: location }),
-      ...(lng && { currentLng: lng }),
-      ...(lat && { currentLat: lat }),
+      ...locationPatch,
     });
 
     await ctx.db.insert("status_history", {
