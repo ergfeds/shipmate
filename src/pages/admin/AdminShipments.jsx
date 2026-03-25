@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, createContext, useContext } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import StatusBadge, { STATUS_CONFIG } from '../../components/StatusBadge';
@@ -15,6 +15,19 @@ import './AdminShipments.css';
 const ALL_STATUSES = Object.keys(STATUS_CONFIG);
 const PACKAGE_TYPES = ['Document','Parcel','Freight','Live Animal','Fragile','Hazardous','Perishable','Oversized'];
 const SHIPPING_MODES = ['Air Freight','Sea Freight','Road Freight','Express'];
+
+/* ── Form field context (prevents F unmounting on each render) ──────────── */
+const FormCtx = createContext(null);
+
+function F({ label, name, type = 'text', required, placeholder, children, full, ...rest }) {
+  const { form, set } = useContext(FormCtx);
+  return (
+    <div className={`form-group${full ? ' as-form-full' : ''}`}>
+      <label className="form-label">{label}{required && <span style={{ color:'var(--clr-error)', marginLeft:3 }}>*</span>}</label>
+      {children || <input className="form-input" type={type} value={form[name] ?? ''} onChange={e => set(name, e.target.value)} placeholder={placeholder} required={required} {...rest} />}
+    </div>
+  );
+}
 
 const FORM_INIT = {
   senderName:'', senderEmail:'', senderPhone:'', senderAddress:'', senderCity:'', senderCountry:'', senderLat:null, senderLng:null,
@@ -291,7 +304,7 @@ function ShipmentForm({ id, onBack, onDone }) {
     });
   }, [existing?._id]);
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const set = useCallback((k, v) => setForm(f => ({ ...f, [k]: v })), []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -329,14 +342,8 @@ function ShipmentForm({ id, onBack, onDone }) {
     } finally { setLoading(false); }
   };
 
-  const F = ({ label, name, type='text', required, placeholder, children, full, ...rest }) => (
-    <div className={`form-group${full ? ' as-form-full' : ''}`}>
-      <label className="form-label">{label}{required && <span style={{ color:'var(--clr-error)', marginLeft:3 }}>*</span>}</label>
-      {children || <input className="form-input" type={type} value={form[name]} onChange={e => set(name, e.target.value)} placeholder={placeholder} required={required} {...rest} />}
-    </div>
-  );
-
   return (
+    <FormCtx.Provider value={{ form, set }}>
     <div className="as-form-wrap">
       <button className="as-back-btn" onClick={onBack}><ArrowLeft size={16}/> Back to Shipments</button>
       <h1 className="text-h2" style={{ marginBottom:6 }}>{id ? 'Edit Shipment' : 'New Shipment'}</h1>
@@ -476,6 +483,7 @@ function ShipmentForm({ id, onBack, onDone }) {
         </div>
       </form>
     </div>
+    </FormCtx.Provider>
   );
 }
 

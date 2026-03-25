@@ -380,6 +380,21 @@ export default function TrackShipment() {
                         </div>
                       </div>
                     </div>
+                    {shipment.currentLocation && (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '10px 16px', marginTop: 16,
+                        background: 'hsla(40,95%,52%,0.07)',
+                        border: '1px solid hsla(40,95%,52%,0.18)',
+                        borderRadius: 10,
+                      }}>
+                        <MapPin size={14} color="var(--clr-gold-400)" style={{ flexShrink: 0 }} />
+                        <div>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--clr-gold-500)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 1 }}>Current Location</div>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--clr-white)' }}>{shipment.currentLocation}</div>
+                        </div>
+                      </div>
+                    )}
                     <div className="track-meta">
                       <div className="track-meta-item">
                         <Clock size={13} />
