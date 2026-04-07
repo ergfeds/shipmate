@@ -202,7 +202,7 @@ function ChatTab({ fingerprint }) {
   if (!session) {
     return (
       <form onSubmit={handleStart} className="widget-start">
-        <h3 className="text-h3" style={{ fontSize: '1.2rem', marginBottom: 8 }}>Welcome to ShipMate</h3>
+        <h3 className="text-h3" style={{ fontSize: '1.2rem', marginBottom: 8 }}>Welcome to Cargo Parcel Express</h3>
         <p className="text-sm" style={{ marginBottom: 20 }}>Please enter your name to start chatting with our logistics experts.</p>
         <input className="form-input" placeholder="Your Name" value={name} onChange={e=>setName(e.target.value)} required />
         <button className="btn btn-primary" type="submit" style={{ width: '100%', marginTop: 12 }}>Start Chat</button>
@@ -215,7 +215,7 @@ function ChatTab({ fingerprint }) {
       <div className="chat-messages" ref={scrollRef}>
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', opacity: 0.5, marginTop: 40, fontSize: '0.8rem' }}>
-            Say hello to a ShipMate representative!
+            Say hello to a Cargo Parcel Express representative!
           </div>
         )}
         {messages.map(m => (
@@ -263,8 +263,8 @@ function CallTab({ fingerprint, activeCall, stopRing }) {
   useEffect(() => {
     if (activeCall?.status === 'ringing' && activeCall?.caller === 'admin') {
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('📞 ShipMate Agent Calling', {
-          body: 'A ShipMate support agent is calling you.',
+        new Notification('📞 Cargo Parcel Express Agent Calling', {
+          body: 'A Cargo Parcel Express support agent is calling you.',
           icon: '/favicon.ico',
         });
       }
@@ -465,7 +465,7 @@ function CallTab({ fingerprint, activeCall, stopRing }) {
             <PhoneCall size={28} color="var(--clr-navy-950)" />
           </div>
           <h3 className="text-h3" style={{ marginBottom: 6 }}>Incoming Call</h3>
-          <p className="text-sm" style={{ marginBottom: 4 }}>A ShipMate support agent is calling you.</p>
+          <p className="text-sm" style={{ marginBottom: 4 }}>A Cargo Parcel Express support agent is calling you.</p>
           {error && <div className="form-error" style={{ marginTop: 10 }}>{error}</div>}
           <div style={{ display: 'flex', gap: 10, marginTop: 24, width: '100%' }}>
             <button className="btn btn-primary" onClick={handleAnswer} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>

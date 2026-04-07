@@ -26,9 +26,9 @@ export default internalMutation({
     const existingSettings = await ctx.db.query("settings").take(1);
     if (existingSettings.length === 0) {
       const DEFAULT_SETTINGS = [
-        { key: "company_name",    value: "ShipMate Cargo",                           category: "general", label: "Company Name" },
+        { key: "company_name",    value: "Cargo Parcel Express",                           category: "general", label: "Company Name" },
         { key: "company_tagline", value: "Global Logistics, Delivered with Precision", category: "general", label: "Tagline" },
-        { key: "contact_email",  value: "info@shipmatecargo.com",                    category: "contact", label: "Contact Email" },
+        { key: "contact_email",  value: "info@cargoparcelexpress.com",                    category: "contact", label: "Contact Email" },
         { key: "contact_phone",  value: "+1 (800) 744-7628",                         category: "contact", label: "Contact Phone" },
         { key: "contact_address",value: "1 Logistics Plaza, New York, NY 10001",     category: "contact", label: "Office Address" },
         { key: "contact_hours",  value: "Mon–Fri 08:00–20:00 EST | Sat 09:00–16:00 EST", category: "contact", label: "Business Hours" },
@@ -40,7 +40,7 @@ export default internalMutation({
         { key: "smtp_port",        value: "587", category: "smtp", label: "SMTP Port" },
         { key: "smtp_user",        value: "",    category: "smtp", label: "SMTP Username" },
         { key: "smtp_pass",        value: "",    category: "smtp", label: "SMTP Password" },
-        { key: "smtp_from",        value: "noreply@shipmatecargo.com", category: "smtp", label: "From Email" },
+        { key: "smtp_from",        value: "noreply@cargoparcelexpress.com", category: "smtp", label: "From Email" },
         { key: "resend_api_key",   value: "", category: "api", label: "Resend API Key" },
         { key: "mapbox_token",     value: "", category: "api", label: "Mapbox Access Token" },
         { key: "call_wait_time",   value: "2", category: "general", label: "Call Wait Time (mins)" },

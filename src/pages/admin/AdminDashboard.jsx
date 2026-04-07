@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   return (
     <div>
       <h1 className="text-h2" style={{ marginBottom: 4 }}>Admin Dashboard</h1>
-      <p className="text-sm" style={{ marginBottom: 32 }}>Overview of all ShipMate operations</p>
+      <p className="text-sm" style={{ marginBottom: 32 }}>Overview of all Cargo Parcel Express operations</p>
 
       {/* Stats */}
       <div className="grid-4 stagger" style={{ marginBottom: 32 }}>

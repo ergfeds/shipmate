@@ -16,9 +16,9 @@ export default function Privacy() {
             { title: '3. Data Sharing', body: 'We share data only with necessary partners: carriers, customs authorities, payment processors, and technology providers. We do not sell your personal data to third parties for marketing purposes.' },
             { title: '4. Data Security', body: 'We employ industry-standard security measures including SSL encryption, access controls, and regular security audits to protect your personal information from unauthorized access or disclosure.' },
             { title: '5. Data Retention', body: 'We retain your data for as long as necessary to provide services and comply with legal obligations, typically 7 years for shipment records. Account data is deleted upon request, subject to legal requirements.' },
-            { title: '6. Your Rights', body: 'Subject to applicable law, you have the right to access, rectify, erase, and port your data. You may also object to processing and withdraw consent at any time. Contact privacy@shipmate.com to exercise these rights.' },
+            { title: '6. Your Rights', body: 'Subject to applicable law, you have the right to access, rectify, erase, and port your data. You may also object to processing and withdraw consent at any time. Contact privacy@cargoparcelexpress.com to exercise these rights.' },
             { title: '7. Cookies', body: 'We use essential, performance, and analytics cookies. You can control cookie preferences through your browser settings. Disabling certain cookies may limit functionality.' },
-            { title: '8. Contact Us', body: 'For privacy-related questions or to exercise your rights, contact our Data Protection Officer at privacy@shipmate.com or by post to our registered address.' },
+            { title: '8. Contact Us', body: 'For privacy-related questions or to exercise your rights, contact our Data Protection Officer at privacy@cargoparcelexpress.com or by post to our registered address.' },
           ].map(({ title, body }) => (
             <div key={title} style={{ marginBottom: 36, paddingBottom: 36, borderBottom: '1px solid hsla(0,0%,100%,0.05)' }}>
               <h2 className="text-h3" style={{ marginBottom: 12 }}>{title}</h2>

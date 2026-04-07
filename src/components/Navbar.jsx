@@ -55,14 +55,14 @@ export default function Navbar() {
       <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`} role="navigation" aria-label="Main navigation">
         <div className="container navbar-inner">
           {/* Logo */}
-          <Link to="/" className="navbar-logo" aria-label="ShipMate Home">
+          <Link to="/" className="navbar-logo" aria-label="Cargo Parcel Express Home">
             <div className="navbar-logo-icon">
               <Anchor size={20} strokeWidth={2.5} />
             </div>
-            <span className="navbar-logo-text">Ship<span>Mate</span></span>
+            <span className="navbar-logo-text">Cargo Parcel<span> Express</span></span>
           </Link>
 
-          {/* Desktop Links */}
+          {/* Desktop Links */
           <div className="navbar-links hide-mobile" role="list">
             {NAV_LINKS.map((link) => (
               <NavLink
@@ -149,7 +149,7 @@ export default function Navbar() {
         <div className="mobile-drawer-header">
           <Link to="/" className="navbar-logo" onClick={() => setMobileOpen(false)}>
             <div className="navbar-logo-icon"><Anchor size={18} strokeWidth={2.5} /></div>
-            <span className="navbar-logo-text">Ship<span>Mate</span></span>
+            <span className="navbar-logo-text">Cargo Parcel<span> Express</span></span>
           </Link>
           <button className="mobile-drawer-close" onClick={() => setMobileOpen(false)} aria-label="Close menu">
             <X size={20} />

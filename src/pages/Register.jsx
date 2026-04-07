@@ -52,7 +52,7 @@ export default function Register() {
                 <Anchor size={24} strokeWidth={2.5} />
               </div>
               <h1 className="text-h2" style={{ marginBottom: 6 }}>Create Account</h1>
-              <p className="text-sm">Join ShipMate and start shipping today</p>
+              <p className="text-sm">Join Cargo Parcel Express and start shipping today</p>
             </div>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {fields.map(({ k, l, type, Icon, togglePw }) => (
