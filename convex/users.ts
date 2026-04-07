@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 // Simple password hashing (in production use bcrypt via HTTP action)
@@ -21,7 +21,7 @@ export const register = mutation({
       .first();
 
     if (existing) {
-      throw new Error("Email already registered");
+      throw new ConvexError("Email already registered");
     }
 
     const userId = await ctx.db.insert("users", {
@@ -49,9 +49,9 @@ export const login = mutation({
       .withIndex("by_email", (q) => q.eq("email", email))
       .first();
 
-    if (!user) throw new Error("Invalid credentials");
-    if (!user.isActive) throw new Error("Account is deactivated");
-    if (user.passwordHash !== hashPassword(password)) throw new Error("Invalid credentials");
+    if (!user) throw new ConvexError("Invalid email or password");
+    if (!user.isActive) throw new ConvexError("Account is deactivated");
+    if (user.passwordHash !== hashPassword(password)) throw new ConvexError("Invalid email or password");
 
     await ctx.db.patch(user._id, { lastLoginAt: Date.now() });
 
