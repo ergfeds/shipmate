@@ -62,7 +62,7 @@ export default function Navbar() {
             <span className="navbar-logo-text">Cargo Parcel<span> Express</span></span>
           </Link>
 
-          {/* Desktop Links */
+          {/* Desktop Links */}
           <div className="navbar-links hide-mobile" role="list">
             {NAV_LINKS.map((link) => (
               <NavLink

@@ -110,7 +110,9 @@ function AdminCalls({ calls }) {
   }, [activeCall?.status]);
 
   const processIncomingSignals = async () => {
-    const userSignals = signals.filter(s => s.sender === 'user' && !processedSignals.current.has(s._id));
+    const userSignals = signals
+      .filter(s => s.sender === 'user' && !processedSignals.current.has(s._id))
+      .sort((a, b) => (a.type === 'offer' ? -1 : b.type === 'offer' ? 1 : 0));
     for (const sig of userSignals) {
       processedSignals.current.add(sig._id);
       try {
@@ -137,9 +139,13 @@ function AdminCalls({ calls }) {
       streamRef.current = stream;
       stream.getTracks().forEach(t => pc.addTrack(t, stream));
       pc.ontrack = e => {
+        const remoteStream = e.streams?.[0] || new MediaStream([e.track]);
         if (!audioRef.current) {
-          const a = new Audio(); a.autoplay = true; a.srcObject = e.streams[0];
+          const a = new Audio(); a.autoplay = true; a.srcObject = remoteStream;
           audioRef.current = a; a.play().catch(() => {});
+        } else {
+          audioRef.current.srcObject = remoteStream;
+          audioRef.current.play().catch(() => {});
         }
       };
       pc.onicecandidate = e => {
@@ -163,9 +169,9 @@ function AdminCalls({ calls }) {
   const handleAnswer = async (callId) => {
     stopRing();
     processedSignals.current.clear();
-    await setupWebRTC(callId, true);
     setActiveId(callId);
     setMobileDetail(true);
+    await setupWebRTC(callId, true);
   };
 
   const handleEnd = async (callId) => {

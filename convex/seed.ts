@@ -10,11 +10,11 @@ export default internalMutation({
   args: {},
   handler: async (ctx) => {
     // 1. Create Admin User
-    const existingAdmin = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", "admin@shipmatecargo.com")).first();
+    const existingAdmin = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", "admin@parcelcargoexpress.com")).first();
     if (!existingAdmin) {
       await ctx.db.insert("users", {
         name: "Super Admin",
-        email: "admin@shipmatecargo.com",
+        email: "admin@parcelcargoexpress.com",
         role: "admin",
         passwordHash: hash("18552219"),
         isActive: true,

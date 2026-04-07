@@ -307,9 +307,9 @@ function CallTab({ fingerprint, activeCall, stopRing }) {
   };
 
   const processIncomingSignals = async () => {
-    const adminSignals = signals.filter(
-      s => s.sender === 'admin' && !processedSignals.current.has(s._id)
-    );
+    const adminSignals = signals
+      .filter(s => s.sender === 'admin' && !processedSignals.current.has(s._id))
+      .sort((a, b) => (a.type === 'answer' ? -1 : b.type === 'answer' ? 1 : 0));
     for (const sig of adminSignals) {
       processedSignals.current.add(sig._id);
       try {
@@ -340,12 +340,16 @@ function CallTab({ fingerprint, activeCall, stopRing }) {
       stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
       pc.ontrack = e => {
+        const remoteStream = e.streams?.[0] || new MediaStream([e.track]);
         if (!audioRef.current) {
           const a = new Audio();
           a.autoplay = true;
-          a.srcObject = e.streams[0];
+          a.srcObject = remoteStream;
           audioRef.current = a;
           a.play().catch(() => {});
+        } else {
+          audioRef.current.srcObject = remoteStream;
+          audioRef.current.play().catch(() => {});
         }
       };
 
