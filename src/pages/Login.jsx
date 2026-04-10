@@ -42,7 +42,7 @@ export default function Login() {
                 <Anchor size={24} strokeWidth={2.5} />
               </div>
               <h1 className="text-h2" style={{ marginBottom: 6 }}>Welcome Back</h1>
-              <p className="text-sm">Sign in to your Cargo Parcel Express account</p>
+              <p className="text-sm">Sign in to your Velox Global Cargo account</p>
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

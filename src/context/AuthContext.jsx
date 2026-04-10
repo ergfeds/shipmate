@@ -5,18 +5,18 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      const stored = localStorage.getItem('cpe_user');
+      const stored = localStorage.getItem('vgc_user');
       return stored ? JSON.parse(stored) : null;
     } catch { return null; }
   });
 
   const login = useCallback((userData) => {
-    localStorage.setItem('cpe_user', JSON.stringify(userData));
+    localStorage.setItem('vgc_user', JSON.stringify(userData));
     setUser(userData);
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('cpe_user');
+    localStorage.removeItem('vgc_user');
     setUser(null);
   }, []);
 

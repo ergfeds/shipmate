@@ -55,11 +55,11 @@ export default function Navbar() {
       <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`} role="navigation" aria-label="Main navigation">
         <div className="container navbar-inner">
           {/* Logo */}
-          <Link to="/" className="navbar-logo" aria-label="Cargo Parcel Express Home">
+          <Link to="/" className="navbar-logo" aria-label="Velox Global Cargo Home">
             <div className="navbar-logo-icon">
               <Anchor size={20} strokeWidth={2.5} />
             </div>
-            <span className="navbar-logo-text">Cargo Parcel<span> Express</span></span>
+            <span className="navbar-logo-text">Velox Global<span> Cargo</span></span>
           </Link>
 
           {/* Desktop Links */}
@@ -149,7 +149,7 @@ export default function Navbar() {
         <div className="mobile-drawer-header">
           <Link to="/" className="navbar-logo" onClick={() => setMobileOpen(false)}>
             <div className="navbar-logo-icon"><Anchor size={18} strokeWidth={2.5} /></div>
-            <span className="navbar-logo-text">Cargo Parcel<span> Express</span></span>
+            <span className="navbar-logo-text">Velox Global<span> Cargo</span></span>
           </Link>
           <button className="mobile-drawer-close" onClick={() => setMobileOpen(false)} aria-label="Close menu">
             <X size={20} />
