@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import toast from 'react-hot-toast';
 import { Save, Building2, Mail, Phone, MapPin, Clock, Globe, Send, Link } from 'lucide-react';
@@ -51,8 +51,24 @@ const SETTING_GROUPS = [
 export default function AdminSettings() {
   const settings = useQuery(api.settings.getAll) || [];
   const saveSetting = useMutation(api.settings.set);
+  const sendTestEmail = useAction(api.email.sendTest);
   const [values, setValues] = useState({});
   const [saving, setSaving] = useState({});
+  const [testEmail, setTestEmail] = useState('');
+  const [testSending, setTestSending] = useState(false);
+
+  const handleTestEmail = async () => {
+    if (!testEmail) return toast.error('Enter a recipient email');
+    setTestSending(true);
+    try {
+      await sendTestEmail({ to: testEmail });
+      toast.success('Test email sent!');
+    } catch (e) {
+      toast.error(e.message || 'Failed to send test email');
+    } finally {
+      setTestSending(false);
+    }
+  };
 
   useEffect(() => {
     if (settings.length > 0) {
@@ -130,6 +146,35 @@ export default function AdminSettings() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Test Email */}
+      <div className="glass" style={{ borderRadius: 'var(--radius-xl)', padding: 'clamp(24px,4vw,36px)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <div style={{ width: 36, height: 36, background: 'hsla(145,65%,38%,0.1)', border: '1px solid hsla(145,65%,38%,0.2)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'hsl(145,65%,55%)' }}>
+            <Mail size={16} />
+          </div>
+          <h2 className="text-h3">Send Test Email</h2>
+        </div>
+        <p className="text-sm" style={{ marginBottom: 16 }}>Verify your SMTP configuration by sending a test email. Save your SMTP settings above first.</p>
+        <div style={{ display: 'flex', gap: 8, maxWidth: 480 }}>
+          <input
+            className="form-input"
+            type="email"
+            placeholder="recipient@example.com"
+            value={testEmail}
+            onChange={e => setTestEmail(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={handleTestEmail}
+            disabled={testSending}
+            style={{ flexShrink: 0, padding: '0 18px' }}
+          >
+            {testSending ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Sending...</> : <><Send size={14} /> Send Test</>}
+          </button>
+        </div>
       </div>
     </div>
   );

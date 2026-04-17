@@ -60,7 +60,7 @@ export const getByKey = query({
   },
 });
 
-export const update = mutation({
+export const set = mutation({
   args: { key: v.string(), value: v.string() },
   handler: async (ctx, { key, value }) => {
     const setting = await ctx.db

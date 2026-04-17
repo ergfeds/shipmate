@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 
 function generateTrackingNumber(): string {
@@ -168,6 +169,14 @@ export const updateStatus = mutation({
       note,
       timestamp: Date.now(),
       updatedBy,
+    });
+
+    // Schedule email notification to sender & receiver
+    await ctx.scheduler.runAfter(0, internal.email.sendShipmentStatusEmail, {
+      shipmentId: shipmentId as string,
+      status,
+      location,
+      note,
     });
 
     return { success: true };

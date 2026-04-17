@@ -11,6 +11,7 @@
 import type * as calls from "../calls.js";
 import type * as chat from "../chat.js";
 import type * as contact from "../contact.js";
+import type * as email from "../email.js";
 import type * as fixAdmin from "../fixAdmin.js";
 import type * as notifications from "../notifications.js";
 import type * as online from "../online.js";
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   calls: typeof calls;
   chat: typeof chat;
   contact: typeof contact;
+  email: typeof email;
   fixAdmin: typeof fixAdmin;
   notifications: typeof notifications;
   online: typeof online;
