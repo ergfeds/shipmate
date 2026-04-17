@@ -67,7 +67,6 @@ export const create = mutation({
 
     const shipmentId = await ctx.db.insert("shipments", {
       ...args,
-      trackingNumber: undefined,
       trackingNumber,
       status: "Pending",
       createdAt: now,
