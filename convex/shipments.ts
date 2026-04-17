@@ -71,6 +71,12 @@ export const create = mutation({
       timestamp: now,
     });
 
+    await ctx.scheduler.runAfter(0, internal.email.sendShipmentStatusEmail, {
+      shipmentId,
+      status: "Pending",
+      note: "Shipment created",
+    });
+
     return { shipmentId, trackingNumber };
   },
 });

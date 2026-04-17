@@ -1,34 +1,148 @@
 "use node";
-
 import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import nodemailer from "nodemailer";
+import dns from "dns/promises";
+import net from "net";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-async function getSmtpSettings(ctx: any) {
+async function getEmailSettings(ctx: any) {
   const all = await ctx.runQuery(api.settings.getAll, {});
   const get = (key: string) => all.find((s: any) => s.key === key)?.value || "";
+  const smtpUser = get("smtp_user").trim();
+  const configuredHost = get("smtp_host").trim();
+  const inferredHost =
+    smtpUser.endsWith("@gmail.com") || smtpUser.endsWith("@googlemail.com")
+      ? "smtp.gmail.com"
+      : "";
+
   return {
-    host: get("smtp_host"),
-    port: parseInt(get("smtp_port") || "587", 10),
-    user: get("smtp_user"),
-    pass: get("smtp_pass") || get("smtp_password"),
-    from: get("smtp_from") || "noreply@veloxgloballogistics.com",
+    smtpHost: configuredHost || inferredHost,
+    smtpPort: get("smtp_port") || "587",
+    smtpUser,
+    smtpPass: get("smtp_pass") || get("smtp_password"),
+    from: get("smtp_from").trim() || smtpUser || "noreply@veloxgloballogistics.com",
     companyName: get("company_name") || "Velox Global Cargo",
     contactEmail: get("contact_email") || "info@veloxgloballogistics.com",
     contactPhone: get("contact_phone") || "+1 605-368-3701",
   };
 }
 
-function createTransporter(smtp: { host: string; port: number; user: string; pass: string }) {
-  return nodemailer.createTransport({
-    host: smtp.host,
-    port: smtp.port,
-    secure: smtp.port === 465,
-    auth: { user: smtp.user, pass: smtp.pass },
-  });
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function resolveSmtpHost(host: string) {
+  const normalizedHost = host.trim();
+  if (!normalizedHost) {
+    throw new Error("SMTP host is not configured. Set it in Admin Settings before sending email.");
+  }
+  if (net.isIP(normalizedHost)) {
+    return normalizedHost;
+  }
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const ipv4Records = await dns.resolve4(normalizedHost);
+      if (ipv4Records.length > 0) {
+        return ipv4Records[0];
+      }
+    } catch (error: any) {
+      if (!["EBUSY", "EAI_AGAIN", "ENOTFOUND", "ENODATA"].includes(error?.code)) {
+        throw error;
+      }
+    }
+
+    try {
+      const ipv6Records = await dns.resolve6(normalizedHost);
+      if (ipv6Records.length > 0) {
+        return ipv6Records[0];
+      }
+    } catch (error: any) {
+      if (!["EBUSY", "EAI_AGAIN", "ENOTFOUND", "ENODATA"].includes(error?.code)) {
+        throw error;
+      }
+    }
+
+    if (attempt < 2) {
+      await sleep(250 * (attempt + 1));
+    }
+  }
+
+  throw new Error(`Could not resolve SMTP host "${normalizedHost}".`);
+}
+
+function getSmtpPort(portValue: string) {
+  const port = Number.parseInt(portValue, 10);
+  return Number.isFinite(port) ? port : 587;
+}
+
+function getFromAddress(cfg: any) {
+  const smtpUser = (cfg.smtpUser || "").trim();
+  const from = (cfg.from || "").trim();
+  const host = (cfg.smtpHost || "").toLowerCase();
+  const isGmail = host === "smtp.gmail.com" || smtpUser.endsWith("@gmail.com") || smtpUser.endsWith("@googlemail.com");
+
+  if (isGmail && smtpUser) {
+    return smtpUser;
+  }
+
+  return from || smtpUser;
+}
+
+async function sendViaSmtp(
+  cfg: any,
+  to: string,
+  subject: string,
+  html: string,
+) {
+  if (!cfg.smtpUser || !cfg.smtpPass) {
+    throw new Error("SMTP settings not fully configured (User or App Password missing).");
+  }
+
+  const host = (cfg.smtpHost || "").trim();
+  const ip = await resolveSmtpHost(host);
+  const port = getSmtpPort(cfg.smtpPort || "587");
+  const fromAddress = getFromAddress(cfg);
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: ip,
+      port,
+      secure: port === 465,
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
+      auth: {
+        user: (cfg.smtpUser || "").trim(),
+        pass: (cfg.smtpPass || "").trim(),
+      },
+      tls: {
+        rejectUnauthorized: true,
+        servername: host,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `${cfg.companyName} <${fromAddress}>`,
+      to,
+      subject,
+      html,
+    });
+  } catch (error: any) {
+    if (error?.code === "EAUTH") {
+      throw new Error("SMTP authentication failed. Check the SMTP user and app password in Admin Settings.");
+    }
+    if (error?.code === "EBUSY" || error?.code === "EAI_AGAIN" || error?.code === "ENOTFOUND") {
+      throw new Error(`SMTP host "${host}" could not be resolved from Convex. Verify the host or try again.`);
+    }
+    if (error?.responseCode === 550 || error?.responseCode === 553) {
+      throw new Error("SMTP rejected the sender address. Use the authenticated mailbox as the From Address.");
+    }
+    throw error;
+  }
 }
 
 function statusColor(status: string): string {
@@ -141,42 +255,106 @@ function shipmentEmailHtml(opts: {
 </html>`;
 }
 
+function welcomeEmailHtml(opts: {
+  companyName: string;
+  contactEmail: string;
+  contactPhone: string;
+  recipientName: string;
+}): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;">
+  <tr><td style="padding:32px 24px 16px;">
+    <h1 style="color:#f5c542;font-size:22px;margin:0;">${opts.companyName}</h1>
+    <p style="color:#94a3b8;font-size:13px;margin:4px 0 0;">Global Logistics, Delivered with Precision</p>
+  </td></tr>
+  <tr><td style="padding:0 24px;">
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:28px;">
+      <p style="color:#cbd5e1;font-size:14px;margin:0 0 16px;">Dear ${opts.recipientName},</p>
+      <h2 style="color:#22c55e;margin:0 0 12px;">Welcome to ${opts.companyName}!</h2>
+      <p style="color:#e2e8f0;font-size:15px;margin:0 0 20px;">We are thrilled to have you on board. Start tracking your global shipments easily.</p>
+
+      <p style="color:#94a3b8;font-size:13px;margin:16px 0 0;">
+        If you have any questions, reply to this email or contact us at
+        <a href="mailto:${opts.contactEmail}" style="color:#f5c542;text-decoration:none;">${opts.contactEmail}</a>
+        or call <strong style="color:#e2e8f0;">${opts.contactPhone}</strong>.
+      </p>
+    </div>
+  </td></tr>
+  <tr><td style="padding:20px 24px;text-align:center;">
+    <p style="color:#475569;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} ${opts.companyName}. All rights reserved.</p>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
+
 // ── Public action: send test email ──────────────────────────────────────────
 
 export const sendTest = action({
   args: { to: v.string() },
   handler: async (ctx, { to }) => {
-    const smtp = await getSmtpSettings(ctx);
-    if (!smtp.host || !smtp.user || !smtp.pass) {
-      throw new Error("SMTP not configured. Fill in host, user, and password in Settings first.");
-    }
-
-    const transporter = createTransporter(smtp);
-    await transporter.sendMail({
-      from: `"${smtp.companyName}" <${smtp.from}>`,
+    const cfg = await getEmailSettings(ctx);
+    
+    await sendViaSmtp(
+      cfg,
       to,
-      subject: `✅ SMTP Test — ${smtp.companyName}`,
-      html: `
-<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
+      `✅ Email Test — ${cfg.companyName}`,
+      `<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
 <body style="margin:0;padding:0;background:#0f172a;font-family:'Segoe UI',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;">
   <tr><td style="padding:32px 24px 16px;">
-    <h1 style="color:#f5c542;font-size:22px;margin:0;">${smtp.companyName}</h1>
+    <h1 style="color:#f5c542;font-size:22px;margin:0;">${cfg.companyName}</h1>
   </td></tr>
   <tr><td style="padding:0 24px;">
     <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:28px;">
-      <h2 style="color:#22c55e;margin:0 0 12px;">SMTP Configuration Working!</h2>
-      <p style="color:#e2e8f0;font-size:14px;">This is a test email from <strong>${smtp.companyName}</strong>.</p>
-      <p style="color:#94a3b8;font-size:13px;">SMTP Host: ${smtp.host}:${smtp.port}<br/>From: ${smtp.from}</p>
+      <h2 style="color:#22c55e;margin:0 0 12px;">Email Configuration Working!</h2>
+      <p style="color:#e2e8f0;font-size:14px;">This is a test email from <strong>${cfg.companyName}</strong>.</p>
+      <p style="color:#94a3b8;font-size:13px;">From: ${cfg.from}</p>
     </div>
   </td></tr>
   <tr><td style="padding:20px 24px;text-align:center;">
-    <p style="color:#475569;font-size:12px;">&copy; ${new Date().getFullYear()} ${smtp.companyName}</p>
+    <p style="color:#475569;font-size:12px;">&copy; ${new Date().getFullYear()} ${cfg.companyName}</p>
   </td></tr>
 </table></body></html>`,
-    });
+    );
 
     return { success: true };
+  },
+});
+
+// ── Internal action: send welcome email ─────────────────────────────
+
+export const sendWelcomeEmail = internalAction({
+  args: {
+    name: v.string(),
+    email: v.string(),
+  },
+  handler: async (ctx, { name, email }) => {
+    const cfg = await getEmailSettings(ctx);
+    if (!cfg.smtpUser) return; // silently skip if not configured
+
+    const subject = `Welcome to — ${cfg.companyName}`;
+    const opts = {
+      companyName: cfg.companyName,
+      contactEmail: cfg.contactEmail,
+      contactPhone: cfg.contactPhone,
+      recipientName: name,
+    };
+
+    try {
+      await sendViaSmtp(
+        cfg,
+        email,
+        subject,
+        welcomeEmailHtml(opts),
+      );
+    } catch (err: any) {
+      console.error(`Failed to email ${email}:`, err.message);
+    }
   },
 });
 
@@ -190,19 +368,18 @@ export const sendShipmentStatusEmail = internalAction({
     note: v.optional(v.string()),
   },
   handler: async (ctx, { shipmentId, status, location, note }) => {
-    const smtp = await getSmtpSettings(ctx);
-    if (!smtp.host || !smtp.user || !smtp.pass) return; // silently skip if not configured
+    const cfg = await getEmailSettings(ctx);
+    if (!cfg.smtpUser) return; // silently skip if not configured
 
     const shipment: any = await ctx.runQuery(api.shipments.getById, {
       shipmentId: shipmentId as any,
     });
     if (!shipment) return;
 
-    const transporter = createTransporter(smtp);
     const baseOpts = {
-      companyName: smtp.companyName,
-      contactEmail: smtp.contactEmail,
-      contactPhone: smtp.contactPhone,
+      companyName: cfg.companyName,
+      contactEmail: cfg.contactEmail,
+      contactPhone: cfg.contactPhone,
       trackingNumber: shipment.trackingNumber,
       status,
       location,
@@ -216,26 +393,28 @@ export const sendShipmentStatusEmail = internalAction({
       estimatedDelivery: shipment.estimatedDelivery,
     };
 
-    const subject = `📦 Shipment ${shipment.trackingNumber} — ${status}`;
+    const subject = `Shipment ${shipment.trackingNumber} — ${status}`;
     const emails: { to: string; name: string }[] = [];
 
-    // Email receiver
     if (shipment.receiverEmail) {
       emails.push({ to: shipment.receiverEmail, name: shipment.receiverName });
     }
-    // Email sender
-    if (shipment.senderEmail) {
+    if (shipment.senderEmail && shipment.senderEmail !== shipment.receiverEmail) {
       emails.push({ to: shipment.senderEmail, name: shipment.senderName });
+    }
+    if (cfg.contactEmail) {
+        // Also send to admin
+        emails.push({ to: cfg.contactEmail, name: "Admin" });
     }
 
     for (const { to, name } of emails) {
       try {
-        await transporter.sendMail({
-          from: `"${smtp.companyName}" <${smtp.from}>`,
+        await sendViaSmtp(
+          cfg,
           to,
           subject,
-          html: shipmentEmailHtml({ ...baseOpts, recipientName: name }),
-        });
+          shipmentEmailHtml({ ...baseOpts, recipientName: name }),
+        );
       } catch (err: any) {
         console.error(`Failed to email ${to}:`, err.message);
       }

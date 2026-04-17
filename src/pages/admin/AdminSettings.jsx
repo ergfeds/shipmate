@@ -36,13 +36,13 @@ const SETTING_GROUPS = [
     ],
   },
   {
-    heading: 'Email / SMTP',
+    heading: 'Email (SMTP)',
     icon: Send,
     fields: [
-      { key: 'smtp_host', label: 'SMTP Host', placeholder: 'smtp.resend.com' },
-      { key: 'smtp_port', label: 'SMTP Port', placeholder: '465' },
-      { key: 'smtp_user', label: 'SMTP Username', placeholder: 'apikey' },
-      { key: 'smtp_password', label: 'SMTP Password / API Key', placeholder: '••••••••', type: 'password' },
+      { key: 'smtp_host', label: 'SMTP Host', placeholder: 'smtp.gmail.com' },
+      { key: 'smtp_port', label: 'SMTP Port', placeholder: '587' },
+      { key: 'smtp_user', label: 'SMTP User', placeholder: 'youremail@gmail.com', type: 'email' },
+      { key: 'smtp_pass', label: 'SMTP App Password', placeholder: 'xxxx xxxx xxxx xxxx', type: 'password' },
       { key: 'smtp_from', label: 'From Address', placeholder: 'noreply@veloxgloballogistics.com', type: 'email' },
     ],
   },
@@ -51,16 +51,42 @@ const SETTING_GROUPS = [
 export default function AdminSettings() {
   const settings = useQuery(api.settings.getAll) || [];
   const saveSetting = useMutation(api.settings.set);
+  const saveSettingsBatch = useMutation(api.settings.batchUpdate);
   const sendTestEmail = useAction(api.email.sendTest);
   const [values, setValues] = useState({});
   const [saving, setSaving] = useState({});
   const [testEmail, setTestEmail] = useState('');
   const [testSending, setTestSending] = useState(false);
 
+  const smtpFields = SETTING_GROUPS.find(group => group.heading === 'Email (SMTP)')?.fields || [];
+
+  const saveFields = async (fields) => {
+    await saveSettingsBatch({
+      settings: fields.map(({ key }) => ({
+        key,
+        value: values[key] || '',
+      })),
+    });
+  };
+
   const handleTestEmail = async () => {
     if (!testEmail) return toast.error('Enter a recipient email');
+
+    const smtpUser = (values.smtp_user || '').trim();
+    const smtpPass = (values.smtp_pass || values.smtp_password || '').trim();
+    const smtpHost = (values.smtp_host || '').trim();
+    const isGmailUser = /@gmail\.com$|@googlemail\.com$/i.test(smtpUser);
+
+    if (!smtpUser || !smtpPass) {
+      return toast.error('Add the SMTP user and app password first.');
+    }
+    if (!smtpHost && !isGmailUser) {
+      return toast.error('Add the SMTP host before sending a test email.');
+    }
+
     setTestSending(true);
     try {
+      await saveFields(smtpFields);
       await sendTestEmail({ to: testEmail });
       toast.success('Test email sent!');
     } catch (e) {
@@ -76,7 +102,7 @@ export default function AdminSettings() {
       settings.forEach(s => { map[s.key] = s.value; });
       setValues(v => ({ ...map, ...v }));
     }
-  }, [settings.length]);
+  }, [settings]);
 
   const handleSave = async (key) => {
     setSaving(s => ({ ...s, [key]: true }));
@@ -91,9 +117,20 @@ export default function AdminSettings() {
   };
 
   const handleSaveGroup = async (fields) => {
-    const keys = fields.map(f => f.key);
-    for (const key of keys) {
-      await handleSave(key);
+    setSaving(s => ({
+      ...s,
+      ...Object.fromEntries(fields.map(({ key }) => [key, true])),
+    }));
+    try {
+      await saveFields(fields);
+      toast.success('Settings saved');
+    } catch (e) {
+      toast.error('Failed to save settings');
+    } finally {
+      setSaving(s => ({
+        ...s,
+        ...Object.fromEntries(fields.map(({ key }) => [key, false])),
+      }));
     }
   };
 

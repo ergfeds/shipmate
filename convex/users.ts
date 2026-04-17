@@ -1,5 +1,6 @@
 import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 // Simple password hashing (in production use bcrypt via HTTP action)
 function hashPassword(password: string): string {
@@ -32,6 +33,11 @@ export const register = mutation({
       passwordHash: hashPassword(password),
       isActive: true,
       createdAt: Date.now(),
+    });
+
+    await ctx.scheduler.runAfter(0, internal.email.sendWelcomeEmail, {
+      name,
+      email,
     });
 
     return { userId, name, email, role: "user" as const };
