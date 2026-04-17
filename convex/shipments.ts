@@ -13,6 +13,7 @@ function generateTrackingNumber(): string {
 export const create = mutation({
   args: {
     userId: v.optional(v.id("users")),
+    trackingNumber: v.optional(v.string()),
     senderName: v.string(),
     senderEmail: v.string(),
     senderPhone: v.string(),
@@ -53,11 +54,20 @@ export const create = mutation({
     estimatedDelivery: v.string(),
   },
   handler: async (ctx, args) => {
-    const trackingNumber = generateTrackingNumber();
+    const requestedTrackingNumber = args.trackingNumber?.trim().toUpperCase();
+    const trackingNumber = requestedTrackingNumber || generateTrackingNumber();
+    const existing = await ctx.db
+      .query("shipments")
+      .withIndex("by_tracking", (q) => q.eq("trackingNumber", trackingNumber))
+      .first();
+    if (existing) {
+      throw new Error("Tracking number already exists. Use a different one or leave it blank for auto-generation.");
+    }
     const now = Date.now();
 
     const shipmentId = await ctx.db.insert("shipments", {
       ...args,
+      trackingNumber: undefined,
       trackingNumber,
       status: "Pending",
       createdAt: now,

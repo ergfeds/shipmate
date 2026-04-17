@@ -30,6 +30,7 @@ function F({ label, name, type = 'text', required, placeholder, children, full, 
 }
 
 const FORM_INIT = {
+  trackingNumber:'',
   senderName:'', senderEmail:'', senderPhone:'', senderAddress:'', senderCity:'', senderCountry:'', senderLat:null, senderLng:null,
   receiverName:'', receiverEmail:'', receiverPhone:'', receiverAddress:'', receiverCity:'', receiverCountry:'', receiverLat:null, receiverLng:null,
   packageType:'Parcel', shippingMode:'Air Freight',
@@ -269,6 +270,7 @@ function ShipmentForm({ id, onBack, onDone }) {
   useEffect(() => {
     if (!existing) return;
     setForm({
+      trackingNumber: existing.trackingNumber || '',
       senderName: existing.senderName || '',
       senderEmail: existing.senderEmail || '',
       senderPhone: existing.senderPhone || '',
@@ -333,7 +335,10 @@ function ShipmentForm({ id, onBack, onDone }) {
         toast.success('Shipment updated');
         onDone(id);
       } else {
-        const { shipmentId } = await createShipment(payload);
+        const { shipmentId } = await createShipment({
+          trackingNumber: form.trackingNumber.trim() || undefined,
+          ...payload,
+        });
         toast.success('Shipment created!');
         onDone(shipmentId);
       }
@@ -352,6 +357,24 @@ function ShipmentForm({ id, onBack, onDone }) {
       </p>
 
       <form onSubmit={handleSubmit}>
+        <div className="as-form-section">
+          <div className="as-form-section-title"><Package size={14}/> Shipment Identity</div>
+          <div className="as-form-grid">
+            <F
+              label="Tracking Number"
+              name="trackingNumber"
+              placeholder="Leave blank to auto-generate"
+              disabled={!!id}
+            />
+            <div className="form-group">
+              <label className="form-label">Behavior</label>
+              <div className="form-input" style={{ display:'flex', alignItems:'center', color:'var(--clr-slate-400)' }}>
+                {id ? 'Tracking number is locked after creation' : 'Blank field = automatic tracking number'}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Sender */}
         <div className="as-form-section">
           <div className="as-form-section-title"><User size={14}/> Sender Information</div>

@@ -258,6 +258,7 @@ function CallTab({ fingerprint, activeCall, stopRing }) {
   const audioRef = useRef(null);
   const streamRef = useRef(null);
   const processedSignals = useRef(new Set());
+  const pendingIceCandidates = useRef([]);
 
   // Send OS notification when admin calls user
   useEffect(() => {
@@ -303,7 +304,29 @@ function CallTab({ fingerprint, activeCall, stopRing }) {
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.srcObject = null; audioRef.current = null; }
     processedSignals.current.clear();
+    pendingIceCandidates.current = [];
     setMuted(false);
+  };
+
+  const flushPendingIceCandidates = async () => {
+    if (!pcRef.current?.remoteDescription) return;
+    while (pendingIceCandidates.current.length > 0) {
+      const candidate = pendingIceCandidates.current.shift();
+      try {
+        await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (_) {}
+    }
+  };
+
+  const handleIncomingIceCandidate = async (candidate) => {
+    if (!pcRef.current) return;
+    if (!pcRef.current.remoteDescription) {
+      pendingIceCandidates.current.push(candidate);
+      return;
+    }
+    try {
+      await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (_) {}
   };
 
   const processIncomingSignals = async () => {
@@ -317,9 +340,10 @@ function CallTab({ fingerprint, activeCall, stopRing }) {
         if (sig.type === 'answer') {
           if (pcRef.current && pcRef.current.signalingState === 'have-local-offer') {
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(data));
+            await flushPendingIceCandidates();
           }
         } else if (sig.type === 'ice-candidate') {
-          try { await pcRef.current.addIceCandidate(new RTCIceCandidate(data)); } catch (_) {}
+          await handleIncomingIceCandidate(data);
         }
       } catch (e) { console.warn('User signal error:', e); }
     }
@@ -344,6 +368,7 @@ function CallTab({ fingerprint, activeCall, stopRing }) {
         if (!audioRef.current) {
           const a = new Audio();
           a.autoplay = true;
+          a.playsInline = true;
           a.srcObject = remoteStream;
           audioRef.current = a;
           a.play().catch(() => {});

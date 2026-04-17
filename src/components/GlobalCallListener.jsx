@@ -32,6 +32,7 @@ export default function GlobalCallListener() {
   const audioRef = useRef(null);
   const streamRef = useRef(null);
   const processedSignals = useRef(new Set());
+  const pendingIceCandidates = useRef([]);
   const notifiedCalls = useRef(new Set());
 
   const { play: playRing, stop: stopRing } = useRingTone();
@@ -111,6 +112,27 @@ export default function GlobalCallListener() {
     processIncomingSignals();
   }, [signals.length, answeredCallId]);
 
+  const flushPendingIceCandidates = useCallback(async () => {
+    if (!pcRef.current?.remoteDescription) return;
+    while (pendingIceCandidates.current.length > 0) {
+      const candidate = pendingIceCandidates.current.shift();
+      try {
+        await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (_) {}
+    }
+  }, []);
+
+  const handleIncomingIceCandidate = useCallback(async (candidate) => {
+    if (!pcRef.current) return;
+    if (!pcRef.current.remoteDescription) {
+      pendingIceCandidates.current.push(candidate);
+      return;
+    }
+    try {
+      await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (_) {}
+  }, []);
+
   const processIncomingSignals = async () => {
     const userSignals = signals.filter(
       s => s.sender === 'user' && !processedSignals.current.has(s._id)
@@ -121,11 +143,12 @@ export default function GlobalCallListener() {
         const data = JSON.parse(sig.data);
         if (sig.type === 'offer') {
           await pcRef.current.setRemoteDescription(new RTCSessionDescription(data));
+          await flushPendingIceCandidates();
           const answer = await pcRef.current.createAnswer();
           await pcRef.current.setLocalDescription(answer);
           await addSignal({ callId: answeredCallId, sender: 'admin', type: 'answer', data: JSON.stringify(answer) });
         } else if (sig.type === 'ice-candidate') {
-          try { await pcRef.current.addIceCandidate(new RTCIceCandidate(data)); } catch (_) {}
+          await handleIncomingIceCandidate(data);
         }
       } catch (e) { console.warn('Signal error (admin):', e); }
     }
@@ -137,6 +160,7 @@ export default function GlobalCallListener() {
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.srcObject = null; audioRef.current = null; }
     processedSignals.current.clear();
+    pendingIceCandidates.current = [];
     setAnsweredCallId(null);
     setUiState('idle');
     setMuted(false);
@@ -162,12 +186,17 @@ export default function GlobalCallListener() {
       stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
       pc.ontrack = e => {
+        const remoteStream = e.streams?.[0] || new MediaStream([e.track]);
         if (!audioRef.current) {
           const a = new Audio();
           a.autoplay = true;
-          a.srcObject = e.streams[0];
+          a.playsInline = true;
+          a.srcObject = remoteStream;
           audioRef.current = a;
           a.play().catch(() => {});
+        } else {
+          audioRef.current.srcObject = remoteStream;
+          audioRef.current.play().catch(() => {});
         }
       };
 

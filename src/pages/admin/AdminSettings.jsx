@@ -51,42 +51,16 @@ const SETTING_GROUPS = [
 export default function AdminSettings() {
   const settings = useQuery(api.settings.getAll) || [];
   const saveSetting = useMutation(api.settings.set);
-  const saveSettingsBatch = useMutation(api.settings.batchUpdate);
   const sendTestEmail = useAction(api.email.sendTest);
   const [values, setValues] = useState({});
   const [saving, setSaving] = useState({});
   const [testEmail, setTestEmail] = useState('');
   const [testSending, setTestSending] = useState(false);
 
-  const smtpFields = SETTING_GROUPS.find(group => group.heading === 'Email (SMTP)')?.fields || [];
-
-  const saveFields = async (fields) => {
-    await saveSettingsBatch({
-      settings: fields.map(({ key }) => ({
-        key,
-        value: values[key] || '',
-      })),
-    });
-  };
-
   const handleTestEmail = async () => {
     if (!testEmail) return toast.error('Enter a recipient email');
-
-    const smtpUser = (values.smtp_user || '').trim();
-    const smtpPass = (values.smtp_pass || values.smtp_password || '').trim();
-    const smtpHost = (values.smtp_host || '').trim();
-    const isGmailUser = /@gmail\.com$|@googlemail\.com$/i.test(smtpUser);
-
-    if (!smtpUser || !smtpPass) {
-      return toast.error('Add the SMTP user and app password first.');
-    }
-    if (!smtpHost && !isGmailUser) {
-      return toast.error('Add the SMTP host before sending a test email.');
-    }
-
     setTestSending(true);
     try {
-      await saveFields(smtpFields);
       await sendTestEmail({ to: testEmail });
       toast.success('Test email sent!');
     } catch (e) {
@@ -102,7 +76,7 @@ export default function AdminSettings() {
       settings.forEach(s => { map[s.key] = s.value; });
       setValues(v => ({ ...map, ...v }));
     }
-  }, [settings]);
+  }, [settings.length]);
 
   const handleSave = async (key) => {
     setSaving(s => ({ ...s, [key]: true }));
@@ -117,20 +91,9 @@ export default function AdminSettings() {
   };
 
   const handleSaveGroup = async (fields) => {
-    setSaving(s => ({
-      ...s,
-      ...Object.fromEntries(fields.map(({ key }) => [key, true])),
-    }));
-    try {
-      await saveFields(fields);
-      toast.success('Settings saved');
-    } catch (e) {
-      toast.error('Failed to save settings');
-    } finally {
-      setSaving(s => ({
-        ...s,
-        ...Object.fromEntries(fields.map(({ key }) => [key, false])),
-      }));
+    const keys = fields.map(f => f.key);
+    for (const key of keys) {
+      await handleSave(key);
     }
   };
 

@@ -71,6 +71,7 @@ function AdminCalls({ calls }) {
   const audioRef = useRef(null);
   const streamRef = useRef(null);
   const processedSignals = useRef(new Set());
+  const pendingIceCandidates = useRef([]);
   const prevRingingCount = useRef(0);
 
   const { play: playRing, stop: stopRing } = useRingTone();
@@ -109,6 +110,27 @@ function AdminCalls({ calls }) {
     }
   }, [activeCall?.status]);
 
+  const flushPendingIceCandidates = useCallback(async () => {
+    if (!pcRef.current?.remoteDescription) return;
+    while (pendingIceCandidates.current.length > 0) {
+      const candidate = pendingIceCandidates.current.shift();
+      try {
+        await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (_) {}
+    }
+  }, []);
+
+  const handleIncomingIceCandidate = useCallback(async (candidate) => {
+    if (!pcRef.current) return;
+    if (!pcRef.current.remoteDescription) {
+      pendingIceCandidates.current.push(candidate);
+      return;
+    }
+    try {
+      await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (_) {}
+  }, []);
+
   const processIncomingSignals = async () => {
     const userSignals = signals
       .filter(s => s.sender === 'user' && !processedSignals.current.has(s._id))
@@ -119,11 +141,12 @@ function AdminCalls({ calls }) {
         const data = JSON.parse(sig.data);
         if (sig.type === 'offer') {
           await pcRef.current.setRemoteDescription(new RTCSessionDescription(data));
+          await flushPendingIceCandidates();
           const answer = await pcRef.current.createAnswer();
           await pcRef.current.setLocalDescription(answer);
           await addSignal({ callId: activeId, sender: 'admin', type: 'answer', data: JSON.stringify(answer) });
         } else if (sig.type === 'ice-candidate') {
-          try { await pcRef.current.addIceCandidate(new RTCIceCandidate(data)); } catch (_) {}
+          await handleIncomingIceCandidate(data);
         }
       } catch (e) { console.warn('Admin signal error:', e); }
     }
@@ -141,7 +164,7 @@ function AdminCalls({ calls }) {
       pc.ontrack = e => {
         const remoteStream = e.streams?.[0] || new MediaStream([e.track]);
         if (!audioRef.current) {
-          const a = new Audio(); a.autoplay = true; a.srcObject = remoteStream;
+          const a = new Audio(); a.autoplay = true; a.playsInline = true; a.srcObject = remoteStream;
           audioRef.current = a; a.play().catch(() => {});
         } else {
           audioRef.current.srcObject = remoteStream;
@@ -163,6 +186,7 @@ function AdminCalls({ calls }) {
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.srcObject = null; audioRef.current = null; }
     processedSignals.current.clear();
+    pendingIceCandidates.current = [];
     setActiveId(null); setMuted(false); setMobileDetail(false);
   }, [stopRing]);
 

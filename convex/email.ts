@@ -3,94 +3,25 @@ import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import nodemailer from "nodemailer";
-import dns from "dns/promises";
-import net from "net";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 async function getEmailSettings(ctx: any) {
   const all = await ctx.runQuery(api.settings.getAll, {});
   const get = (key: string) => all.find((s: any) => s.key === key)?.value || "";
-  const smtpUser = get("smtp_user").trim();
-  const configuredHost = get("smtp_host").trim();
-  const inferredHost =
-    smtpUser.endsWith("@gmail.com") || smtpUser.endsWith("@googlemail.com")
-      ? "smtp.gmail.com"
-      : "";
-
   return {
-    smtpHost: configuredHost || inferredHost,
+    smtpHost: get("smtp_host") || "smtp.gmail.com",
     smtpPort: get("smtp_port") || "587",
-    smtpUser,
-    smtpPass: get("smtp_pass") || get("smtp_password"),
-    from: get("smtp_from").trim() || smtpUser || "noreply@veloxgloballogistics.com",
+    smtpUser: get("smtp_user"),
+    smtpPass: get("smtp_pass"),
+    from: get("smtp_from") || "noreply@veloxgloballogistics.com",
     companyName: get("company_name") || "Velox Global Cargo",
     contactEmail: get("contact_email") || "info@veloxgloballogistics.com",
     contactPhone: get("contact_phone") || "+1 605-368-3701",
   };
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function resolveSmtpHost(host: string) {
-  const normalizedHost = host.trim();
-  if (!normalizedHost) {
-    throw new Error("SMTP host is not configured. Set it in Admin Settings before sending email.");
-  }
-  if (net.isIP(normalizedHost)) {
-    return normalizedHost;
-  }
-
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      const ipv4Records = await dns.resolve4(normalizedHost);
-      if (ipv4Records.length > 0) {
-        return ipv4Records[0];
-      }
-    } catch (error: any) {
-      if (!["EBUSY", "EAI_AGAIN", "ENOTFOUND", "ENODATA"].includes(error?.code)) {
-        throw error;
-      }
-    }
-
-    try {
-      const ipv6Records = await dns.resolve6(normalizedHost);
-      if (ipv6Records.length > 0) {
-        return ipv6Records[0];
-      }
-    } catch (error: any) {
-      if (!["EBUSY", "EAI_AGAIN", "ENOTFOUND", "ENODATA"].includes(error?.code)) {
-        throw error;
-      }
-    }
-
-    if (attempt < 2) {
-      await sleep(250 * (attempt + 1));
-    }
-  }
-
-  throw new Error(`Could not resolve SMTP host "${normalizedHost}".`);
-}
-
-function getSmtpPort(portValue: string) {
-  const port = Number.parseInt(portValue, 10);
-  return Number.isFinite(port) ? port : 587;
-}
-
-function getFromAddress(cfg: any) {
-  const smtpUser = (cfg.smtpUser || "").trim();
-  const from = (cfg.from || "").trim();
-  const host = (cfg.smtpHost || "").toLowerCase();
-  const isGmail = host === "smtp.gmail.com" || smtpUser.endsWith("@gmail.com") || smtpUser.endsWith("@googlemail.com");
-
-  if (isGmail && smtpUser) {
-    return smtpUser;
-  }
-
-  return from || smtpUser;
-}
+import dns from "dns/promises";
 
 async function sendViaSmtp(
   cfg: any,
@@ -102,47 +33,36 @@ async function sendViaSmtp(
     throw new Error("SMTP settings not fully configured (User or App Password missing).");
   }
 
-  const host = (cfg.smtpHost || "").trim();
-  const ip = await resolveSmtpHost(host);
-  const port = getSmtpPort(cfg.smtpPort || "587");
-  const fromAddress = getFromAddress(cfg);
-
-  try {
-    const transporter = nodemailer.createTransport({
-      host: ip,
-      port,
-      secure: port === 465,
-      connectionTimeout: 15000,
-      greetingTimeout: 15000,
-      socketTimeout: 20000,
-      auth: {
-        user: (cfg.smtpUser || "").trim(),
-        pass: (cfg.smtpPass || "").trim(),
-      },
-      tls: {
-        rejectUnauthorized: true,
-        servername: host,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `${cfg.companyName} <${fromAddress}>`,
-      to,
-      subject,
-      html,
-    });
-  } catch (error: any) {
-    if (error?.code === "EAUTH") {
-      throw new Error("SMTP authentication failed. Check the SMTP user and app password in Admin Settings.");
-    }
-    if (error?.code === "EBUSY" || error?.code === "EAI_AGAIN" || error?.code === "ENOTFOUND") {
-      throw new Error(`SMTP host "${host}" could not be resolved from Convex. Verify the host or try again.`);
-    }
-    if (error?.responseCode === 550 || error?.responseCode === 553) {
-      throw new Error("SMTP rejected the sender address. Use the authenticated mailbox as the From Address.");
-    }
-    throw error;
+  // Bypass getaddrinfo libuv threadpool issues by using dns.resolve4
+  const host = (cfg.smtpHost || "smtp.gmail.com").trim();
+  const records = await dns.resolve4(host);
+  if (!records || records.length === 0) {
+    throw new Error("Could not resolve SMTP host.");
   }
+  const ip = records[0];
+
+  const transporter = nodemailer.createTransport({
+    host: ip,
+    port: parseInt(cfg.smtpPort || "587", 10),
+    secure: parseInt(cfg.smtpPort || "587", 10) === 465,
+    auth: {
+      user: (cfg.smtpUser || "").trim(),
+      pass: (cfg.smtpPass || "").trim(),
+    },
+    tls: {
+      rejectUnauthorized: true,
+      servername: host, // Ensure TLS SNI is correctly validated
+    },
+  });
+
+  const fromAddr = `${cfg.companyName} <${cfg.from}>`;
+  
+  await transporter.sendMail({
+    from: fromAddr,
+    to,
+    subject,
+    html,
+  });
 }
 
 function statusColor(status: string): string {
