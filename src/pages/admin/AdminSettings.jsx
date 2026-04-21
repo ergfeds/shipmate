@@ -19,7 +19,7 @@ const SETTING_GROUPS = [
     heading: 'Contact Details',
     icon: Mail,
     fields: [
-      { key: 'contact_email', label: 'Contact Email', placeholder: 'info@veloxgloballogistics.com', type: 'email' },
+      { key: 'contact_email', label: 'Contact Email', placeholder: 'info@cargoparcelexpress.com', type: 'email' },
       { key: 'contact_phone', label: 'Phone', placeholder: '+1 800 123 4567' },
       { key: 'contact_address', label: 'Address', placeholder: '350 Fifth Avenue, New York, NY 10118' },
       { key: 'contact_hours', label: 'Business Hours', placeholder: 'Mon–Fri 08:00–18:00 UTC' },
@@ -29,10 +29,10 @@ const SETTING_GROUPS = [
     heading: 'Social Media',
     icon: Globe,
     fields: [
-      { key: 'social_twitter', label: 'Twitter/X URL', placeholder: 'https://twitter.com/veloxglobalcargo' },
-      { key: 'social_linkedin', label: 'LinkedIn URL', placeholder: 'https://linkedin.com/company/veloxglobalcargo' },
-      { key: 'social_facebook', label: 'Facebook URL', placeholder: 'https://facebook.com/veloxglobalcargo' },
-      { key: 'social_instagram', label: 'Instagram URL', placeholder: 'https://instagram.com/veloxglobalcargo' },
+      { key: 'social_twitter', label: 'Twitter/X URL', placeholder: 'https://twitter.com/cargoparcelexpress' },
+      { key: 'social_linkedin', label: 'LinkedIn URL', placeholder: 'https://linkedin.com/company/cargoparcelexpress' },
+      { key: 'social_facebook', label: 'Facebook URL', placeholder: 'https://facebook.com/cargoparcelexpress' },
+      { key: 'social_instagram', label: 'Instagram URL', placeholder: 'https://instagram.com/cargoparcelexpress' },
     ],
   },
   {
@@ -43,7 +43,7 @@ const SETTING_GROUPS = [
       { key: 'smtp_port', label: 'SMTP Port', placeholder: '587' },
       { key: 'smtp_user', label: 'SMTP User', placeholder: 'youremail@gmail.com', type: 'email' },
       { key: 'smtp_pass', label: 'SMTP App Password', placeholder: 'xxxx xxxx xxxx xxxx', type: 'password' },
-      { key: 'smtp_from', label: 'From Address', placeholder: 'noreply@veloxgloballogistics.com', type: 'email' },
+      { key: 'smtp_from', label: 'From Address', placeholder: 'noreply@cargoparcelexpress.com', type: 'email' },
     ],
   },
 ];
