@@ -33,7 +33,7 @@ export default function AdminLayout() {
           <Link to="/admin" className="admin-logo-link">
             <div className="admin-logo-icon"><Anchor size={18} strokeWidth={2.5} /></div>
             <div>
-              <div className="admin-logo-text">Velox Global Cargo</div>
+              <div className="admin-logo-text">Cargo Parcel Express</div>
               <div className="admin-logo-sub">Admin Panel</div>
             </div>
           </Link>
