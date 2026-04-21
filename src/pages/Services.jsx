@@ -48,7 +48,7 @@ export default function Services() {
               Every Freight <span className="text-gold">Need,</span><br />One Partner
             </h1>
             <p className="text-body" style={{ maxWidth: 560, fontSize: '1.1rem' }}>
-              From the smallest parcel to a herd of horses — Velox Global Cargo has the specialists,
+              From the smallest parcel to a herd of horses — Cargo Parcel Express has the specialists,
               infrastructure and reach to move it safely and punctually anywhere on earth.
             </p>
           </div>

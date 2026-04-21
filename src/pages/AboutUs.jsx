@@ -3,7 +3,7 @@ import Footer from '../components/Footer';
 import { CheckCircle2, Globe, Shield, Users, TrendingUp } from 'lucide-react';
 
 const MILESTONES = [
-  { year: '2007', event: 'Velox Global Cargo founded in New York with regional road freight operations.' },
+  { year: '2007', event: 'Cargo Parcel Express founded in New York with regional road freight operations.' },
   { year: '2010', event: 'Expanded to international air freight. First 10,000 shipments milestone.' },
   { year: '2014', event: 'Launched live animal transport division — IATA certified.' },
   { year: '2018', event: 'Opened 45 global offices. Surpassed 1 million annual shipments.' },
@@ -26,12 +26,12 @@ export default function AboutUs() {
         {/* Hero */}
         <div style={{ background: 'var(--grad-hero)', padding: 'clamp(80px, 12vw, 140px) 0', borderBottom: '1px solid hsla(0,0%,100%,0.05)' }}>
           <div className="container">
-            <div className="section-label"><span>About Velox Global Cargo</span></div>
+            <div className="section-label"><span>About Cargo Parcel Express</span></div>
             <h1 className="text-hero" style={{ maxWidth: 700, marginBottom: 20 }}>
               18 Years of <span className="text-gold">Delivering</span><br />on Our Promises
             </h1>
             <p className="text-body" style={{ maxWidth: 540, fontSize: '1.05rem' }}>
-              Founded in 2007, Velox Global Cargo began as a regional freight company with a bold vision: to redefine
+              Founded in 2007, Cargo Parcel Express began as a regional freight company with a bold vision: to redefine
               what global logistics could look like. Today, we are the world's most trusted logistics partner —
               connecting 190 countries with precision, care, and technology.
             </p>
@@ -42,7 +42,7 @@ export default function AboutUs() {
         <section className="section">
           <div className="container">
             <div style={{ borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid hsla(0,0%,100%,0.07)', height: 460 }}>
-              <img src="/about-warehouse.png" alt="Velox Global Cargo state-of-the-art warehouse" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="/about-warehouse.png" alt="Cargo Parcel Express state-of-the-art warehouse" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
           </div>
         </section>

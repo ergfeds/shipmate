@@ -9,7 +9,7 @@ const SETTING_GROUPS = [
     heading: 'Company Information',
     icon: Building2,
     fields: [
-      { key: 'company_name', label: 'Company Name', placeholder: 'Velox Global Cargo' },
+      { key: 'company_name', label: 'Company Name', placeholder: 'Cargo Parcel Express' },
       { key: 'company_tagline', label: 'Tagline', placeholder: 'Global Logistics, Delivered with Precision' },
       { key: 'live_support_enabled', label: 'Live Support Enabled (true/false)', placeholder: 'true' },
       { key: 'call_wait_time', label: 'Estimated Wait Time (minutes)', placeholder: '2', type: 'number' },
