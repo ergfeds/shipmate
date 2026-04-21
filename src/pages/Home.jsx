@@ -104,7 +104,7 @@ export default function Home() {
       {/* Hero */}
       <section className="hero-section">
         <div className="hero-bg">
-          <img src="/hero.png" alt="Velox Global Cargo global logistics hub" className="hero-bg-img" />
+          <img src="/hero.png" alt="Cargo Parcel Express global logistics hub" className="hero-bg-img" />
           <div className="hero-bg-overlay" />
         </div>
         <div className="hero-orbs">
@@ -241,7 +241,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Velox Global Cargo */}
+      {/* Why Cargo Parcel Express */}
       <section className="section why-section">
         <div className="container">
           <div className="why-header">
@@ -280,7 +280,7 @@ export default function Home() {
             <div className="cta-content">
               <h2 className="text-h1">Ready to Ship <span className="text-gold">Worldwide?</span></h2>
               <p className="text-body" style={{ maxWidth: 500 }}>
-                Join over 250,000 businesses that trust Velox Global Cargo to move their most important freight.
+                Join over 250,000 businesses that trust Cargo Parcel Express to move their most important freight.
                 Start your first booking in under 3 minutes.
               </p>
               <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 8 }}>

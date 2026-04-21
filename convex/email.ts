@@ -14,9 +14,9 @@ async function getEmailSettings(ctx: any) {
     smtpPort: get("smtp_port") || "587",
     smtpUser: get("smtp_user"),
     smtpPass: get("smtp_pass"),
-    from: get("smtp_from") || "noreply@veloxgloballogistics.com",
-    companyName: get("company_name") || "Velox Global Cargo",
-    contactEmail: get("contact_email") || "info@veloxgloballogistics.com",
+    from: get("smtp_from") || "noreply@Cargo Parcel Expressgloballogistics.com",
+    companyName: get("company_name") || "Cargo Parcel Express",
+    contactEmail: get("contact_email") || "info@Cargo Parcel Expressgloballogistics.com",
     contactPhone: get("contact_phone") || "+1 605-368-3701",
   };
 }

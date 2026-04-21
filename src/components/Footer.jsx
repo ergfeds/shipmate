@@ -59,7 +59,7 @@ export default function Footer() {
           <div className="footer-brand">
             <Link to="/" className="footer-logo">
               <div className="footer-logo-icon"><Anchor size={18} strokeWidth={2.5} /></div>
-              <span className="footer-logo-text">Velox Global<span> Cargo</span></span>
+              <span className="footer-logo-text">Cargo Parcel Express Global<span> Cargo</span></span>
             </Link>
             <p className="footer-tagline">{getVal('company_tagline', 'Global Logistics, Delivered with Precision')}</p>
             {socials.length > 0 && (
@@ -117,7 +117,7 @@ export default function Footer() {
 
         <div className="footer-bottom">
           <div className="footer-bottom-text">
-            © {new Date().getFullYear()} {getVal('company_name', 'Velox Global Cargo')}. All rights reserved.
+            © {new Date().getFullYear()} {getVal('company_name', 'Cargo Parcel Express')}. All rights reserved.
           </div>
           <div className="footer-bottom-links">
             <Link to="/terms">Terms</Link>
